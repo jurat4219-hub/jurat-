@@ -1,0 +1,12 @@
+# Ma'lumotlar va maxfiy fayllar omborga TUSHMAYDI
+*.json
+*.xlsx
+*.xls
+*.pdf
+*.png
+*.jpg
+*.mp4
+.env
+*.log
+bot_log.txt
+__pycache__/
