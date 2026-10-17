@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "Jurat — Yangi varaq",
+  "version": "1.0",
+  "description": "Yangi varaq: jonli o't animatsiyasi, Google qidiruv, ish saytlari va soat.",
+  "chrome_url_overrides": { "newtab": "newtab.html" },
+  "icons": { "128": "icon.png" }
+}

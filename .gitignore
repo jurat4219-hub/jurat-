@@ -10,3 +10,7 @@
 *.log
 bot_log.txt
 __pycache__/
+
+# Chrome kengaytma fayllari (istisno)
+!chrome/**/manifest.json
+!chrome/**/icon.png
