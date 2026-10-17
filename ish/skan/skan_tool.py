@@ -75,32 +75,58 @@ def qiyshiq(img):
 
 def fon_tekisla(ch):
     """Soya va notekis yorug'likni olib tashlaydi (fon oq bo'ladi)."""
-    k = max(31, (min(ch.shape[:2]) // 25) | 1)
-    bg = cv2.medianBlur(cv2.dilate(ch, np.ones((7, 7), np.uint8)), k)
-    return cv2.normalize(255 - cv2.absdiff(ch, bg), None, 0, 255, cv2.NORM_MINMAX)
+    k = max(31, (min(ch.shape[:2]) // 20) | 1)
+    bg = cv2.medianBlur(cv2.dilate(ch, np.ones((9, 9), np.uint8)), k)
+    out = cv2.divide(ch, bg, scale=255)
+    return out
+
+
+def keskin(g, sigma=1.4, kuch=1.2):
+    """Unsharp mask: harf chetlarini tiniqlashtiradi."""
+    bl = cv2.GaussianBlur(g, (0, 0), sigma)
+    return cv2.addWeighted(g, 1 + kuch, bl, -kuch, 0)
+
+
+def kontrast(g, past, yuqori, gamma=1.0):
+    x = np.clip((np.arange(256) - past) / float(yuqori - past), 0, 1) ** gamma
+    return cv2.LUT(g, (x * 255).astype(np.uint8))
 
 
 def yaxshila(img, rejim):
-    if rejim == "asl": return img
+    if rejim == "asl":
+        lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB); L, A, B = cv2.split(lab)
+        L = keskin(L, 1.2, 0.6)
+        return cv2.cvtColor(cv2.merge([L, A, B]), cv2.COLOR_LAB2BGR)
     if rejim == "rang":
-        out = cv2.merge([fon_tekisla(c) for c in cv2.split(img)])
-        return cv2.convertScaleAbs(out, alpha=1.08, beta=-8)
+        lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB); L, A, B = cv2.split(lab)
+        L = fon_tekisla(L); L = cv2.fastNlMeansDenoising(L, None, 4, 7, 21)
+        L = keskin(kontrast(L, 70, 230, 1.35), 1.3, 1.0)
+        # rang to'yinganligini oshirish (muhr/imzo yorqinroq), fon oq qolsin
+        A = cv2.addWeighted(A, 1.35, np.full_like(A, 128), -0.35, 0)
+        B = cv2.addWeighted(B, 1.35, np.full_like(B, 128), -0.35, 0)
+        out = cv2.cvtColor(cv2.merge([L, A, B]), cv2.COLOR_LAB2BGR)
+        oq = L > 235; out[oq] = 255
+        return out
     g = fon_tekisla(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
-    g = cv2.fastNlMeansDenoising(g, None, 7, 7, 21)
-    # yumshoq kontrast: fon oq, matn to'q qora, lekin ingichka chiziqlar yo'qolmaydi
-    lut = np.clip((np.arange(256) - 60) * 255.0 / (235 - 60), 0, 255).astype(np.uint8)
-    g = cv2.LUT(g, lut)
+    g = cv2.fastNlMeansDenoising(g, None, 5, 7, 21)
+    g = kontrast(g, 80, 225, 1.5)          # matn to'q qora, fon toza oq
+    g = keskin(g, 1.4, 1.3)
+    g[g > 238] = 255
     return cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)
 
 
-def a4_sahifa(img):
+def a4_olcham(img):
+    """Hujjatni AVVAL A4 300dpi o'lchamga keltiradi (kichik rasm kattalashtiriladi), keyin yaxshilanadi."""
     h, w = img.shape[:2]
-    W, H = (A4[1], A4[0]) if w > h else A4         # albom rasm -> albom sahifa
+    W, H = (A4[1], A4[0]) if w > h else A4
     m = int(0.03 * W); s = min((W - 2 * m) / w, (H - 2 * m) / h)
-    nw, nh = int(w * s), int(h * s)
-    r = cv2.resize(img, (nw, nh), interpolation=cv2.INTER_AREA if s < 1 else cv2.INTER_CUBIC)
+    return cv2.resize(img, (int(w * s), int(h * s)), interpolation=cv2.INTER_AREA if s < 1 else cv2.INTER_LANCZOS4), (W, H)
+
+
+def a4_sahifa(img, WH):
+    W, H = WH; nh, nw = img.shape[:2]
     page = np.full((H, W, 3), 255, np.uint8); y, x = (H - nh) // 2, (W - nw) // 2
-    page[y:y + nh, x:x + nw] = r
+    page[y:y + nh, x:x + nw] = img
     return page
 
 
@@ -111,10 +137,11 @@ def cmd_pdf(o):
         img = yukla(p); kesildi = False
         if o.kesma != "yoq": img, kesildi = hujjat_kesish(img)
         img = qiyshiq(img)
-        img = a4_sahifa(yaxshila(img, o.rejim))
+        img, WH = a4_olcham(img)
+        img = a4_sahifa(yaxshila(img, o.rejim), WH)
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         pil = Image.fromarray(rgb).convert("L") if o.rejim == "skan" else Image.fromarray(rgb)
-        buf = io.BytesIO(); pil.save(buf, "JPEG", quality=88, dpi=(300, 300), optimize=True)
+        buf = io.BytesIO(); pil.save(buf, "JPEG", quality=93, dpi=(300, 300), optimize=True)
         sahifalar.append(buf.getvalue()); hisob.append(f"{os.path.basename(p)}: {'chet topildi, kesildi' if kesildi else 'chet topilmadi, butun rasm'}")
     out = o.chiqish or os.path.join(os.path.dirname(os.path.abspath(o.rasmlar[0])),
                                     f"Skan_{datetime.datetime.now():%Y%m%d_%H%M%S}.pdf")
