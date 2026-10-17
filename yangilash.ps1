@@ -3,9 +3,10 @@ $repo = Split-Path -Parent $MyInvocation.MyCommand.Path
 $dst  = "C:\Users\HP\claude-telegram"
 Set-Location $repo
 git pull --ff-only
+python -m pip install --quiet --disable-pip-version-check -r "$repo\requirements.txt"
 $bk = "$dst\zaxira\$(Get-Date -Format yyyyMMdd_HHmm)"
 New-Item -ItemType Directory -Force -Path $bk | Out-Null
-foreach ($d in @(".claude\agents", ".claude\skills", "ish\akt", "ish\qarz", "ish\pubg", "ish\zapravka")) {
+foreach ($d in @(".claude\agents", ".claude\skills", "ish\akt", "ish\qarz", "ish\pubg", "ish\zapravka", "ish\skan")) {
   if (Test-Path "$dst\$d") { Copy-Item "$dst\$d" "$bk\$d" -Recurse -Force -ErrorAction SilentlyContinue }
   New-Item -ItemType Directory -Force -Path "$dst\$d" | Out-Null
   Copy-Item "$repo\$d\*" "$dst\$d\" -Recurse -Force
