@@ -12,7 +12,7 @@ Keyin bot oynasida `/exit` yozing.
 | Papka | Kompyuterdagi joyi |
 |---|---|
 | `.claude/agents`, `.claude/skills` | `C:\Users\HP\claude-telegram\.claude\...` |
-| `ish/akt`, `ish/qarz`, `ish/pubg`, `ish/zapravka`, `ish/skan`, `ish/video`, `ish/guruh` | `C:\Users\HP\claude-telegram\ish\...` |
+| `ish/akt`, `ish/qarz`, `ish/pubg`, `ish/zapravka`, `ish/skan`, `ish/video`, `ish/guruh`, `ish/musiqa` | `C:\Users\HP\claude-telegram\ish\...` |
 | `bot/` | `C:\Users\HP\claude-telegram\` |
 | `docs/claude_qoshimcha_*.md` | `CLAUDE.md` oxiriga qo'shiladi (bir marta) |
 

@@ -17,6 +17,7 @@ Jurat yordam so'rasa — quyidagi jadvalni Telegram'ga yubor (o'zgartirmasdan, f
 | Video montaj | Video + `montaj qil` / `reels qil subtitr bilan` | Pauzasiz video, 9:16, subtitr |
 | PUBG chust | O'yin videosi + `chust` | Har qurol/pritsel uchun sozlama rasmi |
 | Guruh kuzatuvi | `IYK OTA guruhida bugun nima bo'ldi`, `guruh fayllari` | Qisqa xulosa, guruhga kelgan fayllar |
+| Musiqa | `Sherali Jo'rayev Bahor top`; audio/video + `bu qanaqa qo'shiq`; `kompyuterimdagi ... qo'shig'ini yubor`; video + `fon musiqa qo'y` | Havolalar, qo'shiq nomi, audio fayl, musiqali video |
 | Shartnoma / hujjat | `... bilan shartnoma tuz`, `pretenziya yoz` | Word + PDF |
 
 Eslatmalar (kerak bo'lsa qo'sh):
