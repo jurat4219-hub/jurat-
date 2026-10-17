@@ -106,6 +106,7 @@ def audd_natija(j):
     for nom, url in (("Spotify", sp), ("Apple Music", am), ("Deezer", dz), ("Boshqa", r.get("song_link"))):
         if url: qat.append(f"{nom}: {url}")
     u = urllib.parse.quote(f"{r.get('artist', '')} {r.get('title', '')}".strip())
+    qat.append(f"Yandex Musiqa: https://music.yandex.ru/search?text={u}")
     qat.append(f"YouTube Music: https://music.youtube.com/search?q={u}")
     return "\n".join(qat)
 
