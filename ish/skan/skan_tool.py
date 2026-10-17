@@ -171,6 +171,30 @@ def yaxshila(img, rejim):
     return cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)
 
 
+def chet_tozala(img, ulush=0.16, bosh=0.012):
+    """Varaq cheti topilmaganda: yuqori/pastki 16% dagi, rasm ramkasiga TEGIB turgan, asosiy matndan bo'sh oraliq bilan ajralgan begona parchalarni (ostidagi boshqa qog'oz) oqartiradi."""
+    g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY); H = g.shape[0]
+    qora = (g < 150).mean(axis=1)
+    bo = qora < 0.003; band = max(8, int(bosh * H)); lim = int(ulush * H)
+    out = img.copy(); tozalandi = []
+    # yuqori: chegaradan pastga qarab — kontentdan keyin bo'sh oraliq topilsa, undan yuqorisini oqart
+    run = 0
+    for y in range(lim, 0, -1):
+        run = run + 1 if bo[y] else 0
+        if run >= band and qora[:y].sum() > 0:
+            cut = y + run // 2
+            if qora[:max(3, int(0.012 * H))].max() > 0.004: out[:cut] = 255; tozalandi.append("yuqori")
+            break
+    run = 0
+    for y in range(H - lim, H):
+        run = run + 1 if bo[y] else 0
+        if run >= band and qora[y:].sum() > 0:
+            cut = y - run // 2
+            if qora[H - max(3, int(0.012 * H)):].max() > 0.004: out[cut:] = 255; tozalandi.append("past")
+            break
+    return out, tozalandi
+
+
 def a4_olcham(img):
     """Hujjatni AVVAL A4 300dpi o'lchamga keltiradi (kichik rasm kattalashtiriladi), keyin yaxshilanadi."""
     h, w = img.shape[:2]
@@ -200,11 +224,13 @@ def cmd_pdf(o):
         rejim = o.rejim if o.rejim != "avto" else ("rang" if rangli_bormi(img) else "skan")
         img = qiyshiq(img)
         img, WH = a4_olcham(img)
-        img = a4_sahifa(yaxshila(img, rejim), WH)
+        img = yaxshila(img, rejim); toz = []
+        if not kesildi and o.kesma != "yoq": img, toz = chet_tozala(img)
+        img = a4_sahifa(img, WH)
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         pil = Image.fromarray(rgb).convert("L") if rejim == "skan" else Image.fromarray(rgb)
         buf = io.BytesIO(); pil.save(buf, "JPEG", quality=93, dpi=(300, 300), optimize=True)
-        sahifalar.append(buf.getvalue()); hisob.append(f"{os.path.basename(p)}: {'chet topildi, kesildi' if kesildi else 'chet topilmadi, butun rasm'} | {rejim}")
+        sahifalar.append(buf.getvalue()); hisob.append(f"{os.path.basename(p)}: {'chet topildi, kesildi' if kesildi else 'chet topilmadi, butun rasm'} | {rejim}" + (f" | begona parcha oqartirildi: {', '.join(toz)}" if toz else ""))
     out = o.chiqish or os.path.join(os.path.dirname(os.path.abspath(o.rasmlar[0])),
                                     f"Skan_{datetime.datetime.now():%Y%m%d_%H%M%S}.pdf")
     with open(out, "wb") as f:
