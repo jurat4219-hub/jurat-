@@ -195,6 +195,24 @@ def chet_tozala(img, ulush=0.16, bosh=0.012):
     return out, tozalandi
 
 
+def dog_tozala(img, max_px=None):
+    """Matndan uzoqda yolg'iz turgan mayda dog'/nuqta/chiziqchalarni (qog'oz chetidan qolgan) oqartiradi."""
+    g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY); H, W = g.shape
+    dark = (g < 175).astype(np.uint8)
+    r = max(15, int(0.012 * W)) | 1
+    grp = cv2.dilate(dark, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (r, r)))
+    n, lab, st, _ = cv2.connectedComponentsWithStats(grp, 8)
+    if n <= 1: return img, 0
+    cnt = np.bincount(lab[dark > 0].ravel(), minlength=n)
+    max_px = max_px or int(0.00006 * H * W)          # ~500 px A4 300dpi da (bitta harfdan kichik guruh)
+    yomon = np.where((cnt > 0) & (cnt < max_px))[0]
+    yomon = yomon[yomon != 0]
+    if not len(yomon): return img, 0
+    m = np.isin(lab, yomon) & (dark > 0)
+    out = img.copy(); out[m] = 255
+    return out, int(len(yomon))
+
+
 def a4_olcham(img):
     """Hujjatni AVVAL A4 300dpi o'lchamga keltiradi (kichik rasm kattalashtiriladi), keyin yaxshilanadi."""
     h, w = img.shape[:2]
@@ -226,11 +244,14 @@ def cmd_pdf(o):
         img, WH = a4_olcham(img)
         img = yaxshila(img, rejim); toz = []
         if not kesildi and o.kesma != "yoq": img, toz = chet_tozala(img)
+        if rejim != "asl":
+            img, nd = dog_tozala(img)
+            if nd: toz.append(f"{nd} ta mayda dog'")
         img = a4_sahifa(img, WH)
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         pil = Image.fromarray(rgb).convert("L") if rejim == "skan" else Image.fromarray(rgb)
         buf = io.BytesIO(); pil.save(buf, "JPEG", quality=93, dpi=(300, 300), optimize=True)
-        sahifalar.append(buf.getvalue()); hisob.append(f"{os.path.basename(p)}: {'chet topildi, kesildi' if kesildi else 'chet topilmadi, butun rasm'} | {rejim}" + (f" | begona parcha oqartirildi: {', '.join(toz)}" if toz else ""))
+        sahifalar.append(buf.getvalue()); hisob.append(f"{os.path.basename(p)}: {'chet topildi, kesildi' if kesildi else 'chet topilmadi, butun rasm'} | {rejim}" + (f" | tozalandi: {', '.join(toz)}" if toz else ""))
     out = o.chiqish or os.path.join(os.path.dirname(os.path.abspath(o.rasmlar[0])),
                                     f"Skan_{datetime.datetime.now():%Y%m%d_%H%M%S}.pdf")
     with open(out, "wb") as f:
