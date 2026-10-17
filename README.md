@@ -15,3 +15,7 @@ Keyin bot oynasida `/exit` yozing.
 | `ish/akt`, `ish/qarz`, `ish/pubg`, `ish/zapravka`, `ish/skan`, `ish/video` | `C:\Users\HP\claude-telegram\ish\...` |
 | `bot/` | `C:\Users\HP\claude-telegram\` |
 | `docs/claude_qoshimcha_*.md` | `CLAUDE.md` oxiriga qo'shiladi (bir marta) |
+
+## Chrome yangi varaq (o't animatsiyasi)
+`chrome://extensions` → «Режим разработчика» → «Загрузить распакованное» → `C:\Users\HP\jurat-\chrome\yangi-varaq`.
+Saytlar ro'yxati: `chrome/yangi-varaq/app.js` (LINKS). Yangilangandan keyin kengaytma kartasidagi ↻ ni bosing.
