@@ -4,9 +4,13 @@ $dst  = "C:\Users\HP\claude-telegram"
 Set-Location $repo
 git pull --ff-only
 python -m pip install --quiet --disable-pip-version-check -r "$repo\requirements.txt"
+if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue) -and -not (Test-Path "$env:LOCALAPPDATA\Microsoft\WinGet\Links\ffmpeg.exe")) {
+  Write-Host "ffmpeg o'rnatilmoqda (video montaj uchun)..."; winget install --id Gyan.FFmpeg -e --source winget --accept-package-agreements --accept-source-agreements
+}
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\Videos\montaj" | Out-Null
 $bk = "$dst\zaxira\$(Get-Date -Format yyyyMMdd_HHmm)"
 New-Item -ItemType Directory -Force -Path $bk | Out-Null
-foreach ($d in @(".claude\agents", ".claude\skills", "ish\akt", "ish\qarz", "ish\pubg", "ish\zapravka", "ish\skan")) {
+foreach ($d in @(".claude\agents", ".claude\skills", "ish\akt", "ish\qarz", "ish\pubg", "ish\zapravka", "ish\skan", "ish\video")) {
   if (Test-Path "$dst\$d") { Copy-Item "$dst\$d" "$bk\$d" -Recurse -Force -ErrorAction SilentlyContinue }
   New-Item -ItemType Directory -Force -Path "$dst\$d" | Out-Null
   Copy-Item "$repo\$d\*" "$dst\$d\" -Recurse -Force
