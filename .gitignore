@@ -14,3 +14,6 @@ __pycache__/
 # Chrome kengaytma fayllari (istisno)
 !chrome/**/manifest.json
 !chrome/**/icon.png
+!chrome/**/LivelyInfo.json
+!chrome/**/thumb.png
+!chrome/**/ekran_blokirovka.jpg

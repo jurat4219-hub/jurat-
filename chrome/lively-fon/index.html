@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="uz"><head><meta charset="utf-8"><title>Jurat o't foni</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:"Segoe UI",system-ui,sans-serif;color:#f3f1e8}
+canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block}
+#soat{position:fixed;top:9vh;left:0;right:0;text-align:center;z-index:2;pointer-events:none}
+#t{font:300 clamp(60px,9vw,130px)/1 Georgia,"Times New Roman",serif;letter-spacing:2px;text-shadow:0 0 30px rgba(212,232,106,.25)}
+#d{margin-top:10px;font-size:14px;letter-spacing:5px;text-transform:uppercase;color:#d4e86a;opacity:.85}
+</style></head>
+<body>
+<div id="soat"><div id="t">--:--</div><div id="d"></div></div>
+<script>
+const OY=["yanvar","fevral","mart","aprel","may","iyun","iyul","avgust","sentabr","oktabr","noyabr","dekabr"],KUN=["yakshanba","dushanba","seshanba","chorshanba","payshanba","juma","shanba"];
+function tick(){const d=new Date();t.textContent=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");document.getElementById("d").textContent=`${KUN[d.getDay()]} · ${d.getDate()} ${OY[d.getMonth()]} ${d.getFullYear()}`}
+tick();setInterval(tick,10000);
+</script>
+<script src="grass3d.js"></script>
+</body></html>

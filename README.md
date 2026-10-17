@@ -19,3 +19,7 @@ Keyin bot oynasida `/exit` yozing.
 ## Chrome yangi varaq (o't animatsiyasi)
 `chrome://extensions` → «Режим разработчика» → «Загрузить распакованное» → `C:\Users\HP\jurat-\chrome\yangi-varaq`.
 Saytlar ro'yxati: `chrome/yangi-varaq/app.js` (LINKS). Yangilangandan keyin kengaytma kartasidagi ↻ ni bosing.
+
+## Ish stoli foni (jonli o't) va ekran blokirovkasi
+- Jonli fon: Microsoft Store → **Lively Wallpaper** (bepul) → «+» → `C:\Users\HP\jurat-\chrome\lively-fon\index.html`.
+- Ekran blokirovkasi: Параметры → Персонализация → Экран блокировки → Фото → `chrome\lively-fon\ekran_blokirovka.jpg`.
