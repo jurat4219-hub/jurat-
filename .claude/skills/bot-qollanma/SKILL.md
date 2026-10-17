@@ -16,6 +16,7 @@ Jurat yordam so'rasa — quyidagi jadvalni Telegram'ga yubor (o'zgartirmasdan, f
 | Texpasport / ID | Ikki tomon rasmi + `bitta pdf qil` | Ikkala tomon bitta A4 betda |
 | Video montaj | Video + `montaj qil` / `reels qil subtitr bilan` | Pauzasiz video, 9:16, subtitr |
 | PUBG chust | O'yin videosi + `chust` | Har qurol/pritsel uchun sozlama rasmi |
+| Guruh kuzatuvi | `IYK OTA guruhida bugun nima bo'ldi`, `guruh fayllari` | Qisqa xulosa, guruhga kelgan fayllar |
 | Shartnoma / hujjat | `... bilan shartnoma tuz`, `pretenziya yoz` | Word + PDF |
 
 Eslatmalar (kerak bo'lsa qo'sh):
