@@ -9,6 +9,10 @@ Ishlatish:
          rang = rangli, lekin fon oqartirilgan (muhr/imzo rangli qolsin desa)
          asl  = faqat to'g'rilash va A4, rang o'zgarmaydi (foto uchun)
 Bir nechta rasm = bitta ko'p sahifali PDF (berilgan tartibda).
+
+  python skan_tool.py karta old.jpg orqa.jpg [--olcham katta|asl] [--chiqish nom.pdf]
+  Texpasport / ID karta / guvohnoma: ikkala tomoni BITTA A4 betda ketma-ket (old tepada, orqa pastda).
+  --olcham asl = haqiqiy karta o'lchami (86 mm), katta = bet kengligining 78% (o'qish oson).
 """
 import argparse, os, sys, io, datetime
 import numpy as np
@@ -16,6 +20,8 @@ import cv2
 from PIL import Image, ImageOps
 
 A4 = (2480, 3508)  # 300 dpi
+MIN_AR = 0.25      # varaq rasmning kamida shuncha qismini egallasin (karta uchun 0.04)
+NISBAT = 1.4142    # A4; karta uchun 1.586
 
 
 def yukla(path):
@@ -46,7 +52,7 @@ def oq_varaq(sm):
     cs, _ = cv2.findContours(m, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not cs: return None
     c = max(cs, key=cv2.contourArea); A = sm.shape[0] * sm.shape[1]
-    if not (0.25 * A < cv2.contourArea(c) < 0.97 * A): return None
+    if not (MIN_AR * A < cv2.contourArea(c) < 0.97 * A): return None
     hull = cv2.convexHull(c)
     for eps in (0.02, 0.03, 0.04, 0.06, 0.08):
         a = cv2.approxPolyDP(hull, eps * cv2.arcLength(hull, True), True)
@@ -84,7 +90,7 @@ def hujjat_kesish(img):
         cs, _ = cv2.findContours(e, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         for c in sorted(cs, key=cv2.contourArea, reverse=True)[:8]:
             a = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
-            if len(a) == 4 and cv2.isContourConvex(a) and cv2.contourArea(a) > 0.25 * A:
+            if len(a) == 4 and cv2.isContourConvex(a) and cv2.contourArea(a) > MIN_AR * A:
                 nomzod.append(a)
     ov = oq_varaq(sm)
     if ov is not None: nomzod.append(ov)
@@ -96,7 +102,7 @@ def hujjat_kesish(img):
     for q in nomzod:
         m = np.zeros(sm.shape[:2], np.uint8); cv2.fillConvexPoly(m, q.reshape(-1, 2).astype(np.int32), 1)
         ar = m.sum() / A
-        if ar < 0.25 or ar > 0.98: continue
+        if ar < MIN_AR or ar > 0.98: continue
         toza = oq[m > 0].mean()
         qq = q.reshape(-1, 2).astype(float); Hs, Ws = sm.shape[:2]; mg = 0.02 * max(Hs, Ws)
         ramka = sum(1 for x, y in qq if x < mg or y < mg or x > Ws - mg or y > Hs - mg)
@@ -107,9 +113,9 @@ def hujjat_kesish(img):
     wA = max(np.linalg.norm(p[2] - p[3]), np.linalg.norm(p[1] - p[0])); hA = max(np.linalg.norm(p[1] - p[2]), np.linalg.norm(p[0] - p[3]))
     # perspektiva bo'yini qisqartiradi: A4 ga yaqin varaqni aniq A4 nisbatga keltiramiz
     r = max(wA, hA) / min(wA, hA)
-    if 1.12 < r < 1.7:
-        if hA >= wA: hA = wA * 1.4142
-        else: wA = hA * 1.4142
+    if abs(r - NISBAT) / NISBAT < 0.22:
+        if hA >= wA: hA = wA * NISBAT
+        else: wA = hA * NISBAT
     dst = np.array([[0, 0], [wA - 1, 0], [wA - 1, hA - 1], [0, hA - 1]], dtype="float32")
     return cv2.warpPerspective(img, cv2.getPerspectiveTransform(p, dst), (int(wA), int(hA)), flags=cv2.INTER_CUBIC), True
 
@@ -150,8 +156,13 @@ def kontrast(g, past, yuqori, gamma=1.0):
 
 def yaxshila(img, rejim):
     if rejim == "asl":
+        # oq balans: eng yorug' 30% piksellar kulrang (neytral) bo'lsin — pushti/sariq tusni oladi
+        f = img.astype(np.float32); Lm = f.mean(axis=2); thr = np.percentile(Lm, 70)
+        ref = f[Lm >= thr].mean(axis=0); img = np.clip(f * (ref.mean() / np.maximum(ref, 1)), 0, 255).astype(np.uint8)
         lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB); L, A, B = cv2.split(lab)
-        L = keskin(L, 1.2, 0.6)
+        L = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(L)   # qorong'i suratni yoritadi
+        L = cv2.fastNlMeansDenoising(L, None, 5, 7, 21)
+        L = keskin(L, 1.2, 0.8)
         return cv2.cvtColor(cv2.merge([L, A, B]), cv2.COLOR_LAB2BGR)
     if rejim == "rang":
         lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB); L, A, B = cv2.split(lab)
@@ -261,14 +272,55 @@ def cmd_pdf(o):
     for h in hisob: print("  " + h)
 
 
+def cmd_karta(o):
+    """Texpasport/ID/guvohnoma: har bir karta suratini kesib, to'g'rilab, A4 ga ketma-ket (bir betda 2 tadan) joylaydi."""
+    global MIN_AR, NISBAT
+    import img2pdf, hashlib
+    MIN_AR, NISBAT = 0.04, 1.586
+    kartalar, hisob, kor = [], [], set()
+    for p in o.rasmlar:
+        hsh = hashlib.md5(open(p, "rb").read()).hexdigest()
+        if hsh in kor: hisob.append(f"{os.path.basename(p)}: TAKROR — tashlab ketildi"); continue
+        kor.add(hsh)
+        img = yukla(p); img, kes = hujjat_kesish(img)
+        if img.shape[0] > img.shape[1]: img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)   # karta doim yotiq
+        kw = int(A4[0] * (0.40 if o.olcham == "asl" else 0.78))   # asl = 86 mm (haqiqiy o'lcham)
+        kh = int(kw / 1.586)
+        img = cv2.resize(img, (kw, kh), interpolation=cv2.INTER_LANCZOS4 if img.shape[1] < kw else cv2.INTER_AREA)
+        img = yaxshila(img, "asl" if o.rejim == "avto" else o.rejim)
+        kartalar.append(img); hisob.append(f"{os.path.basename(p)}: {'karta topildi, kesildi' if kes else 'karta cheti topilmadi, butun rasm'}")
+    sahifalar = []
+    for i in range(0, len(kartalar), 2):
+        page = np.full((A4[1], A4[0], 3), 255, np.uint8)
+        juft = kartalar[i:i + 2]; gap = 120
+        total = sum(k.shape[0] for k in juft) + gap * (len(juft) - 1)
+        y = max(150, (A4[1] - total) // 3)
+        for k in juft:
+            x = (A4[0] - k.shape[1]) // 2
+            page[y:y + k.shape[0], x:x + k.shape[1]] = k
+            cv2.rectangle(page, (x - 2, y - 2), (x + k.shape[1] + 1, y + k.shape[0] + 1), (200, 200, 200), 2)
+            y += k.shape[0] + gap
+        buf = io.BytesIO(); Image.fromarray(cv2.cvtColor(page, cv2.COLOR_BGR2RGB)).save(buf, "JPEG", quality=93, dpi=(300, 300))
+        sahifalar.append(buf.getvalue())
+    out = o.chiqish or os.path.join(os.path.dirname(os.path.abspath(o.rasmlar[0])), f"Karta_{datetime.datetime.now():%Y%m%d_%H%M%S}.pdf")
+    with open(out, "wb") as f:
+        f.write(img2pdf.convert(sahifalar, layout_fun=img2pdf.get_fixed_dpi_layout_fun((300, 300))))
+    print(out); print(f"Kartalar: {len(kartalar)} | betlar: {len(sahifalar)} | o'lcham: {o.olcham} | hajm: {os.path.getsize(out) / 1024:.0f} KB")
+    for h in hisob: print("  " + h)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = ap.add_subparsers(dest="cmd", required=True)
     p = sp.add_parser("pdf"); p.add_argument("rasmlar", nargs="+")
     p.add_argument("--rejim", choices=["avto", "skan", "rang", "asl"], default="avto")
     p.add_argument("--chiqish"); p.add_argument("--kesma", choices=["ha", "yoq"], default="ha")
+    k = sp.add_parser("karta"); k.add_argument("rasmlar", nargs="+")
+    k.add_argument("--olcham", choices=["katta", "asl"], default="katta")
+    k.add_argument("--rejim", choices=["avto", "asl", "rang", "skan"], default="avto"); k.add_argument("--chiqish")
     o = ap.parse_args()
     if o.cmd == "pdf": cmd_pdf(o)
+    elif o.cmd == "karta": cmd_karta(o)
 
 
 if __name__ == "__main__":

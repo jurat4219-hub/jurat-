@@ -18,3 +18,10 @@ Ish papkasi: `C:\Users\HP\claude-telegram\ish\skan`
 5. Chiqishda "chet topilmadi" bo'lsa — PDF baribir yasaladi; faqat qo'shimcha: "Varaq chetlari ko'rinmadi — keyingi safar varaqni to'q fonda, to'liq suratga oling."
 
 Qoidalar: rasmni o'zing ko'rib chizma, matnni qayta terma — faqat dastur. Agent ochma (oddiy ish). Asl rasmlarni o'chirma.
+
+## Karta rejimi (texpasport, ID karta, guvohnoma, prava)
+Jurat karta suratlarini (odatda old + orqa) yuborib "bitta pdf", "ketma-ket", "ikkovi bitta betda", "texpasport pdf" desa, yoki rasmlarda kichik karta bo'lsa:
+`python skan_tool.py karta "<old>" "<orqa>" --chiqish "C:\Users\HP\claude-telegram\ish\skan\Texpasport_<raqam yoki sana>.pdf"`
+- Ikkala tomon BITTA A4 betda: birinchi berilgan tepada. Old tomon (gerb, "GUVOHNOMA", davlat raqami) birinchi bo'lsin — kelgan tartib teskari bo'lsa almashtir.
+- "haqiqiy o'lchamda", "asl o'lcham" → `--olcham asl` (86 mm). Default katta (o'qish oson).
+- 4 ta rasm = 2 bet (har betda 2 tadan).
