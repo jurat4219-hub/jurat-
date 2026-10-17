@@ -5,6 +5,7 @@
   python musiqa_tool.py aniqla audio_yoki_video.mp4 [--dan 0]  # qo'shiq nomini aniqlash (AudD rasmiy API, token kerak)
   python musiqa_tool.py kutubxona [--papka "D:\\Musiqa"]      # kompyuterdagi musiqa papkasini indekslash
   python musiqa_tool.py qidir "jo'rayev bahor" [--max 10]      # o'z kutubxonangizdan fayl topish
+  python musiqa_tool.py trend [--mamlakat uz] [--max 20]      # hozir ommabop qo'shiqlar (Apple Music / Deezer rasmiy chartlari)
   python musiqa_tool.py fon video.mp4 [--musiqa fayl.mp3|avto] [--baland 0.18] [--chiqish nom.mp4]
                                                                # videoga fon musiqasi (nutq paytida ovozi pasayadi)
 
@@ -207,6 +208,49 @@ def cmd_fon(o):
     print(f"Fon: {os.path.basename(mus)} | video {dur:.1f} s | {'nutq ustiga past ovozda' if ovoz else 'videoda ovoz yoq — faqat musiqa'}")
 
 
+# ---------------- 5) trend (rasmiy ochiq chartlar, kalitsiz) ----------------
+def json_ol(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=30) as r: return json.loads(r.read().decode("utf-8"))
+
+
+def apple_chart(cc, n):
+    j = json_ol(f"https://rss.applemarketingtools.com/api/v2/{cc}/music/most-played/{n}/songs.json")
+    return [(x.get("artistName", "?"), x.get("name", "?"), x.get("url", "")) for x in (j.get("feed") or {}).get("results", [])]
+
+
+def deezer_chart(n):
+    j = json_ol(f"https://api.deezer.com/chart/0/tracks?limit={n}")
+    return [((x.get("artist") or {}).get("name", "?"), x.get("title", "?"), x.get("link", "")) for x in j.get("data", [])]
+
+
+def cmd_trend(o):
+    MN = {"uz": "O'zbekiston", "ru": "Rossiya", "kz": "Qozog'iston", "tr": "Turkiya", "us": "AQSh"}
+    royxat, manba = [], ""
+    for cc in dict.fromkeys([o.mamlakat.lower(), "ru", "us"]):
+        try:
+            royxat = apple_chart(cc, o.max)
+            if royxat: manba = f"Apple Music — {MN.get(cc, cc.upper())} top {len(royxat)}"; break
+        except Exception:
+            continue
+    if o.dunyo or not royxat:
+        try:
+            d = deezer_chart(o.max)
+            if d and not royxat: royxat, manba = d, f"Deezer — dunyo top {len(d)}"
+            elif d: royxat += [None] + d; manba += f" + Deezer dunyo top {len(d)}"
+        except Exception:
+            pass
+    if not royxat: raise SystemExit("Chartlarni olib bo'lmadi (internet?). Keyinroq urinib ko'ring.")
+    print(f"🔥 {manba}:")
+    k = 0
+    for x in royxat:
+        if x is None:
+            print("— Deezer (dunyo) —"); k = 0; continue
+        k += 1; a, t, url = x
+        yt = "https://music.youtube.com/search?q=" + urllib.parse.quote(f"{a} {t}")
+        print(f"{k}. {a} — {t}\n   {url or yt}" + (f"\n   YouTube Music: {yt}" if url else ""))
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"): sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -215,10 +259,12 @@ def main():
     a = sp.add_parser("aniqla"); a.add_argument("fayl"); a.add_argument("--dan", type=float)
     a = sp.add_parser("kutubxona"); a.add_argument("--papka", action="append")
     a = sp.add_parser("qidir"); a.add_argument("soz"); a.add_argument("--max", type=int, default=10)
+    a = sp.add_parser("trend"); a.add_argument("--mamlakat", default="uz"); a.add_argument("--max", type=int, default=20)
+    a.add_argument("--dunyo", action="store_true")
     a = sp.add_parser("fon"); a.add_argument("video"); a.add_argument("--musiqa"); a.add_argument("--baland", type=float, default=0.18)
     a.add_argument("--chiqish")
     o = ap.parse_args()
-    {"havola": cmd_havola, "aniqla": cmd_aniqla, "kutubxona": cmd_kutubxona, "qidir": cmd_qidir, "fon": cmd_fon}[o.cmd](o)
+    {"havola": cmd_havola, "aniqla": cmd_aniqla, "kutubxona": cmd_kutubxona, "qidir": cmd_qidir, "trend": cmd_trend, "fon": cmd_fon}[o.cmd](o)
 
 
 if __name__ == "__main__":

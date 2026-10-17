@@ -1,6 +1,6 @@
 ---
 name: musiqa
-description: Jurat qo'shiq so'rasa ("... qo'shig'ini top", "havola ber"), audio/video yuborib "bu qanaqa qo'shiq", "qo'shiqni aniqla" desa, "kompyuterimdagi ... qo'shig'ini yubor" desa yoki videoga "fon musiqa qo'y" desa ishlaydi. Faqat qonuniy yo'llar.
+description: Jurat trend/top qo'shiqlarni so'rasa, qo'shiq so'rasa ("... qo'shig'ini top", "havola ber"), audio/video yuborib "bu qanaqa qo'shiq", "qo'shiqni aniqla" desa, "kompyuterimdagi ... qo'shig'ini yubor" desa yoki videoga "fon musiqa qo'y" desa ishlaydi. Faqat qonuniy yo'llar.
 ---
 # Musiqa (agentsiz, qisqa javob)
 
@@ -19,6 +19,11 @@ Natijani (ijrochi — nom, albom, havolalar) yubor. "AUDD_TOKEN yo'q" chiqsa —
 2. `python M qidir "<so'zlar>"` → eng mos 1-faylni Telegram'ga AUDIO fayl qilib yubor. Bir nechta mos bo'lsa — ro'yxatni 5 tagacha ko'rsatib, raqam so'ra.
 3. 50 MB dan katta fayl Telegram'ga sig'maydi — shuni ayt.
 Faqat Juratning shaxsiy foydalanishi uchun; guruhlarga yoki boshqalarga tarqatma.
+
+## 5. Trend — "hozir qaysi qo'shiqlar trendda", "top qo'shiqlar", "ommabop qo'shiqlar"
+`python M trend` (O'zbekiston Apple Music chart; bo'lmasa Rossiya/AQSh). "dunyo" desa `--dunyo`, "Rossiya/Turkiya" desa `--mamlakat ru|tr|kz`, "top 10" desa `--max 10`.
+Ro'yxatni havolalari bilan yubor. "TikTok/Reels trend" yoki "o'zbek trend" so'rasa — qo'shimcha WebSearch (shu hafta, joriy oy/yil bilan) qilib, 5–10 ta nom + YouTube Music havolasini ber.
+Jurat ro'yxatdan birini tanlasa — 1-bo'limdagi havolani ber, MP3 yuklab berma.
 
 ## 4. Fon musiqasi — video + "fon musiqa qo'y" (yoki "montaj qil musiqa bilan")
 Montaj ham so'ralsa avval video-montaj skilini bajar, keyin natijaga:
