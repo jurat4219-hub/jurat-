@@ -428,6 +428,8 @@ def cmd_akt(o, db):
     m("A6:I6", f"Мы, нижеподписавшиеся, {B['nom']}, с одной стороны, и {knom}, с другой стороны, составили настоящий акт сверки в том, "
                f"что состояние взаимных расчетов по данным учета следующее:", f(), L); H[6] = 30
     m("A8:E8", f"По данным {B['nom']}, сум", f(True), C, True); m("F8:I8", f"По данным {knom}, сум", f(True), C, True)
+    # uzun nomli kontragent sarlavhasi kesilib qolmasin: ~55 belgi bir qatorga sig'adi
+    H[8] = 16 if max(len(B['nom']), len(knom)) + 15 <= 55 else 30
     hdr = ["№", "Дата", "Документ", "Дебет", "Кредит", "Дата", "Документ", "Дебет", "Кредит"]
     for j, h in enumerate(hdr, 1):
         c = ws.cell(9, j, h); c.font = f(True); c.alignment = C; c.border = BD
@@ -529,6 +531,8 @@ def cmd_akt(o, db):
     elif min(bd) > dan: print(f"DIQQAT: bank ko'chirmasi {dmy(min(bd))} dan boshlanadi — undan oldingi to'lovlar yo'q.")
     fd = [x["date"] for x in db["qatorlar"] if x["biz"] == o.biz and x["manba"] == "faktura"]
     if not fd: print("DIQQAT: bazada fakturalar yo'q — faqat bank to'lovlari aktga kirdi!")
+    if cur and not any(x["tur"] in ("toladik", "toladi") for x in cur):
+        print("DIQQAT: aktda birorta ham TO'LOV yo'q — yuborishdan oldin 'tekshir' buyrug'ini ishga tushiring (bank ko'chirmasi yetishmasligi mumkin)")
     tash = [x for x in db["tashlangan"] if x["biz"] == o.biz and o.stir in (x.get("sel"), x.get("buy")) and x.get("date") and dan <= x["date"] <= gacha]
     if tash: print(f"Diqqat: shu kontragent bo'yicha {len(tash)} ta faktura tashlangan (tashlangan --stir {o.stir} bilan ko'ring)")
     if len(sj) > 1 or (sj and o.shartnoma == ""):
@@ -615,6 +619,21 @@ def cmd_tekshir(o, db):
     if oth:
         print(f"5) DIQQAT: {', '.join(sorted({x['biz'] for x in oth}))} ham shu firma bilan {len(oth)} ta operatsiya qilgan — ularni aralashtirmang, lekin Juratga ayting")
     else: print("5) Boshqa korxonalarimiz bilan aralashgan operatsiya yo'q ✓")
+    # 6) bir tomonlama akt: faqat faktura bor, to'lov yo'q (yoki aksincha) — odatda bank ko'chirmasi o'sha davr uchun yuklanmagan
+    fk = [x for x in mine if x["tur"] in ("sotdik", "oldik")]; tl = [x for x in mine if x["tur"] in ("toladik", "toladi")]
+    if fk and not tl:
+        muammo += 1
+        print(f"6) DIQQAT: {len(fk)} ta faktura bor, lekin BIRORTA HAM TO'LOV YO'Q. Bank ko'chirmasida shu firma nomi bilan qidiring "
+              f"(nomi boshqacha yozilgan yoki STIR 000000000 bo'lishi mumkin), topilsa: kochir --id <id> --stir {st}")
+    elif tl and not fk:
+        muammo += 1; print(f"6) DIQQAT: {len(tl)} ta to'lov bor, lekin faktura yo'q — Didox eksportida shu firma fakturalarini tekshiring")
+    else: print("6) Faktura ham, to'lov ham bor ✓")
+    # 7) bank ko'chirmasi qamrovi kontragent bilan birinchi operatsiyani qoplaydimi
+    if mine and bd and min(bd) > min(x["date"] for x in mine):
+        muammo += 1
+        print(f"7) DIQQAT: shu firma bilan birinchi operatsiya {dmy(min(x['date'] for x in mine))}, lekin bank ko'chirmasi faqat {dmy(min(bd))} dan yuklangan — "
+              f"oldingi davr ko'chirmasini yuklang, aks holda o'sha to'lovlar aktga tushmaydi")
+    else: print("7) Bank ko'chirmasi davri yetarli ✓")
     print(f"XULOSA: {'TO`G`RI ✓' if muammo == 0 else f'{muammo} ta tekshirilishi kerak bo`lgan joy'}")
 
 

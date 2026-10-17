@@ -35,7 +35,8 @@ Quyidagi qadamlar agent uchun ma'lumot:
 4. Skript Excel va PDF yasaydi. Juratga PDF FAYLni (asosiy) va Excel faylni birga yubor + Saldo/Debet/Kredit va Natija qatorlarini.
    "PDF yasalmadi" desa — faqat Excel yubor va sababini ayt.
    "Diqqat: N ta faktura tashlangan" bo'lsa — `tashlangan --stir ..` ro'yxatini ham ko'rsat.
-5. Katta summa yoki yangi kontragent bo'lsa — yuborishdan oldin tekshiruvchi agentiga ber (manba fayllar + akt).
+5. YUBORISHDAN OLDIN DOIM: `python akt_tool.py tekshir --biz .. --stir ..`. Agar skript «aktda birorta ham TO'LOV yo'q» yoki «bank ko'chirmasi faqat ... dan yuklangan» desa — aktni TAYYOR deb yubormang: Juratga qisqa ayting ("faqat fakturalar bor, to'lovlar topilmadi — <davr> bank ko'chirmasini yuboring") va ko'chirma kelgach qayta yasang.
+6. Katta summa yoki yangi kontragent bo'lsa — yuborishdan oldin tekshiruvchi agentiga ber (manba fayllar + akt).
 
 ## Qoidalar
 - Bizning tomondan: sotdik (bizning faktura) va to'ladik (biz o'tkazdik) = Дебет; oldik (ularning fakturasi) va to'ladi (ular o'tkazdi) = Кредит.
