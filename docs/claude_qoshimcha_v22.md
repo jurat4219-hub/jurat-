@@ -1,0 +1,2 @@
+## 17. KO'P VIDEO — PARALLEL AGENTLAR
+2 tadan ko'p zapravka videosi kelsa: darhol "N ta video qabul qilindi" de, videolarni o'zing ochma. `ish\zapravka\navbat.py kadr` bilan hamma kadrni birdan tayyorla, keyin har videoga bitta `zapravka-video` agentini BITTA xabarda birdan `run_in_background: true` bilan ishga tushir (10 tagacha). Kutib o'tirma — yangi xabarlarga javob berishda davom et. Tugagach bitta umumiy javob ber (zapravka-sverka skili, 0-bo'lim).

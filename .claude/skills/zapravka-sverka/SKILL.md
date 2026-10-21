@@ -18,6 +18,14 @@ BARCHA Excel fayllar FAQAT `ish\zapravka\jurnal_tool.py` orqali yasaladi — o'z
 Python yo'q bo'lsa: `winget install Python.Python.3.12`, keyin `python -m pip install openpyxl`.
 Eski o'zing yasagan jurnal fayllaridan (jurnal_2026-10.xlsx va h.k.) FOYDALANMA — faqat jurnal_data.json.
 
+## 0. KO'P VIDEO (2 tadan ko'p) — qotib qolmaslik tartibi
+1. Darhol Telegram'ga: "N ta video qabul qilindi, ishlayapman" (bitta qisqa xabar). Videolarni o'zing OCHMA.
+2. Hammasini yuklab ol (download_attachment) → `ish\zapravka\video\<YYYY-MM-DD>\`. Yuklanmaganini (20 MB dan katta) sanab qo'y.
+3. `python navbat.py kadr --oqim 10 "ish\zapravka\video\<YYYY-MM-DD>"` — barcha kadrlar bir necha soniyada tayyor.
+4. Har OK qator uchun bitta `zapravka-video` agenti: BITTA xabarda hammasini birdan, `run_in_background: true` bilan (bir vaqtda 10 tagacha; ko'p bo'lsa 10 tadan to'lqin). Har agentga: video yo'li, kadr.jpg yo'li, sana, vaqt, forward nomi.
+5. Agentlar ishlayotganda yangi xabarlarga javob berishda davom et (kutib o'tirma).
+6. Hammasi tugagach: `python jurnal_tool.py check --month YYYY-MM` + `summary --day KK.OO.YYYY` → Juratga BITTA umumiy javob: nechta yozildi, qaysilari "?"/xato, yuklanmaganlar ro'yxati.
+
 ## A. Video/rasm keldi (zapravka-video agenti bajaradi)
 1. download_attachment → ish\zapravka\video\<YYYY-MM-DD>_vN.mp4
 2. `python kadr.py "<video>"` → 2 rasm; kubni IKKI rasmdan o'qib solishtir.

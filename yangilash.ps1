@@ -16,7 +16,7 @@ foreach ($d in @(".claude\agents", ".claude\skills", "ish\akt", "ish\qarz", "ish
   New-Item -ItemType Directory -Force -Path "$dst\$d" | Out-Null
   Copy-Item "$repo\$d\*" "$dst\$d\" -Recurse -Force
 }
-foreach ($f in @("Telegram-bot.bat", "bot_tekshir.ps1", "awake.ps1")) { Copy-Item "$repo\bot\$f" "$dst\$f" -Force }
+foreach ($f in @("Telegram-bot.bat", "bot_tekshir.ps1", "awake.ps1", "bot_qayta.ps1")) { Copy-Item "$repo\bot\$f" "$dst\$f" -Force }
 $cm = "$dst\CLAUDE.md"
 if (Test-Path $cm) {
   $cur = [IO.File]::ReadAllText($cm, [Text.Encoding]::UTF8)
@@ -31,4 +31,12 @@ if (Test-Path $cm) {
   }
 }
 Write-Host "Oxirgi o'zgarish: $(git log -1 --format='%cd | %s' --date=format:'%d.%m.%Y %H:%M')"
-Write-Host "TAYYOR. Zaxira: $bk. Endi bot oynasida /exit yozing." -ForegroundColor Green
+# Ish stolida "Botni qayta yoqish" tugmasi va Windows yonganda avto-start
+$ws = New-Object -ComObject WScript.Shell
+$lnk = $ws.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) "Botni qayta yoqish.lnk"))
+$lnk.TargetPath = "powershell.exe"; $lnk.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$dst\bot_qayta.ps1`""
+$lnk.WorkingDirectory = $dst; $lnk.IconLocation = "shell32.dll,238"; $lnk.Save()
+$st = $ws.CreateShortcut("$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Telegram-bot.lnk")
+$st.TargetPath = "$dst\Telegram-bot.bat"; $st.WorkingDirectory = $dst; $st.Save()
+Write-Host "TAYYOR. Zaxira: $bk. Bot qayta yoqilmoqda (yangi sozlamalar bilan)..." -ForegroundColor Green
+& powershell -NoProfile -ExecutionPolicy Bypass -File "$dst\bot_qayta.ps1"

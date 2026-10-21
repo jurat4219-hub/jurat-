@@ -14,4 +14,11 @@ claude "Telegram chat 7993263197 ga bitta qisqa xabar yubor: Bot ishga tushdi. B
 echo [%date% %time%] Bot to'xtadi >> bot_log.txt
 echo Bot to'xtadi. 15 soniyadan keyin qayta ishga tushadi. Butunlay to'xtatish uchun oynani yoping.
 timeout /t 15 /nobreak
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\HP\claude-telegram\bot_tekshir.ps1"
+if errorlevel 1 (
+  echo [%date% %time%] Boshqa nusxa ishlayapti - bu oyna yopildi >> bot_log.txt
+  echo Boshqa bot nusxasi ishlayapti. Ikkinchisi kerak emas - bu oyna yopiladi.
+  timeout /t 5 /nobreak >nul
+  exit
+)
 goto loop

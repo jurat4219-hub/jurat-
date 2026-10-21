@@ -11,7 +11,7 @@ Jurat yordam so'rasa — quyidagi jadvalni Telegram'ga yubor (o'zgartirmasdan, f
 | Akt sverka | `Shafoat bilan akt` (davr aytmasa — to'liq tarix) | PDF + Excel, shartnomalar bo'yicha saldo |
 | Bank / faktura yuklash | Bank ko'chirmasi yoki Didox Excel faylini yuboring | Bazaga qo'shiladi |
 | Qarz hisobi | `Rustam firmadan 5 tonna sement oldik 12 mln`, `qarz qancha` | Qoldiq, tarix, Excel |
-| Zapravka | Zapravka videosi/rasmi; `oylik hisobot`, `sverka` | Jurnal, IYK OTA sverkasi |
+| Zapravka | Zapravka videosi/rasmi (10 tagacha birdan); `oylik hisobot`, `sverka` | Jurnal, IYK OTA sverkasi |
 | Rasm → PDF | Hujjat rasm(lar)i + `pdf qil` (`rangli`, `oq-qora`) | Skaner sifatidagi PDF |
 | Texpasport / ID | Ikki tomon rasmi + `bitta pdf qil` | Ikkala tomon bitta A4 betda |
 | Video montaj | Video + `montaj qil` / `reels qil subtitr bilan` | Pauzasiz video, 9:16, subtitr |
@@ -22,5 +22,6 @@ Jurat yordam so'rasa — quyidagi jadvalni Telegram'ga yubor (o'zgartirmasdan, f
 
 Eslatmalar (kerak bo'lsa qo'sh):
 - 20 MB dan katta video/fayl Telegram'dan kelmaydi — `C:\Users\HP\Videos\montaj` papkasiga tashlab, nomini yozing.
+- Bot javob bermasa: ish stolidagi **«Botni qayta yoqish»** ni ikki marta bosing (hamma nusxani yopib, bittasini ochadi). Oynada 'Login expired' bo'lsa — bot oynasida `/login` → 1 → brauzerda Authorize.
 - Bot kompyuterda ishlaydi: kompyuter o'chsa yoki uxlasa — bot javob bermaydi.
 - Yangilash: PowerShell'da `powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\jurat-\yangilash.ps1"`, keyin bot oynasida `/exit`.
