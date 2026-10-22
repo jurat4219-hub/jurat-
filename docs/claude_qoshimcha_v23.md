@@ -1,0 +1,2 @@
+## 18. ZAPRAVKA RAQAMI — 3 XONA VA TUZATISH
+Zapravka videosida davlat raqamining faqat o'rtadagi 3 xonasi o'qilsa ham yetarli: --plate "540" bersang jurnal_tool.py IYK_OTA_mashinalar.xlsx dan to'lig'ini topadi (540→01 540 UMA, 696→01 696 OMA, 861→01 861 ULA); harf xato bo'lsa ham 3 xona to'g'ri bo'lsa tuzatiladi. "N ta mashina bor" desa Juratdan so'ra. Raqamsiz yoki xato yozuvni tuzatish: `python jurnal_tool.py setplate --id N --plate "..."`.

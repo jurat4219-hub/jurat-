@@ -30,20 +30,68 @@ def davom(v):
     except Exception: return 0.0
 
 
+def kadr_vaqt(v, t, w=760):
+    """v videodan t soniyadagi bitta kadr -> vaqtincha jpg yo'li (yoki None)."""
+    out = os.path.splitext(v)[0] + f"_t{int(t*10):04d}.jpg"
+    r = subprocess.run([FF, "-y", "-hide_banner", "-loglevel", "error", "-ss", f"{max(0,t):.2f}", "-i", v,
+                        "-frames:v", "1", "-vf", f"scale={w}:-2", "-q:v", "3", out], capture_output=True, text=True)
+    return out if r.returncode == 0 and os.path.exists(out) else None
+
+
 def bitta(v):
     if not os.path.exists(v): return f"XATO|{v}|fayl yo'q"
     d = davom(v)
     if d <= 0: return f"XATO|{v}|video o'qilmadi (buzuq yoki rasm emas)"
     out = os.path.splitext(v)[0] + "_kadr.jpg"
-    t1, t2 = max(0, d - 0.3), max(0, d - 1.8)          # yakuniy qiymat + biroz oldin (displey to'xtaganini solishtirish uchun)
-    fc = "[0:v]scale=900:-2,setsar=1[a];[1:v]scale=900:-2,setsar=1[b];[a][b]hstack=inputs=2"
-    r = subprocess.run([FF, "-y", "-hide_banner", "-loglevel", "error", "-ss", f"{t1:.2f}", "-i", v, "-ss", f"{t2:.2f}", "-i", v,
-                        "-filter_complex", fc, "-frames:v", "1", "-q:v", "3", out], capture_output=True, text=True)
-    if r.returncode != 0 or not os.path.exists(out):
-        r = subprocess.run([FF, "-y", "-hide_banner", "-loglevel", "error", "-sseof", "-0.5", "-i", v, "-frames:v", "1",
-                            "-vf", "scale=900:-2", "-q:v", "3", out], capture_output=True, text=True)   # qisqa video: faqat oxirgi kadr
-        if r.returncode != 0: return f"XATO|{v}|{r.stderr.strip()[-200:]}"
+    # Zapravkada DAVLAT RAQAMI odatda boshi/o'rtasida (mashina kelganda), KUB oxirida (displey to'xtaganda)
+    # ko'rinadi. Shuning uchun bir nechta vaqtdan kadr olib, 2 qatorli montaj qilamiz: raqam ham, kub ham tushsin.
+    ts = sorted(set([max(0, d*0.12), max(0, d*0.40), max(0, d*0.68), max(0, d-1.5), max(0, d-0.25)]))
+    frames = [f for f in (kadr_vaqt(v, t) for t in ts) if f]
+    if not frames:
+        r = subprocess.run([FF, "-y", "-hide_banner", "-loglevel", "error", "-sseof", "-0.5", "-i", v,
+                            "-frames:v", "1", "-vf", "scale=900:-2", "-q:v", "3", out], capture_output=True, text=True)
+        return f"OK|{v}|{out}|{d:.1f}" if r.returncode == 0 else f"XATO|{v}|{r.stderr.strip()[-200:]}"
+    ok = montaj(frames, out)
+    for f in frames:
+        try: os.remove(f)
+        except OSError: pass
+    if not ok:
+        r = subprocess.run([FF, "-y", "-hide_banner", "-loglevel", "error", "-sseof", "-0.5", "-i", v,
+                            "-frames:v", "1", "-vf", "scale=900:-2", "-q:v", "3", out], capture_output=True, text=True)
+        if r.returncode != 0: return f"XATO|{v}|montaj/kadr xato"
     return f"OK|{v}|{out}|{d:.1f}"
+
+
+def montaj(frames, out, cols=2):
+    """Kadrlarni PIL bilan to'r qilib bitta jpg ga joylaydi (ustunlar teng kenglikda)."""
+    try:
+        from PIL import Image
+    except ImportError:
+        return False
+    try:
+        ims = [Image.open(f).convert("RGB") for f in frames]
+    except Exception:
+        return False
+    if not ims: return False
+    cw = max(im.width for im in ims)
+    import math
+    rows = math.ceil(len(ims) / cols)
+    cell = [[None] * cols for _ in range(rows)]
+    for i, im in enumerate(ims):
+        if im.width != cw: im = im.resize((cw, round(im.height * cw / im.width)))
+        cell[i // cols][i % cols] = im
+    rowh = [max((im.height for im in r if im), default=0) for r in cell]
+    W, H, pad = cw * cols + (cols + 1) * 8, sum(rowh) + (rows + 1) * 8, 8
+    canvas = Image.new("RGB", (W, H), (20, 20, 20))
+    y = pad
+    for ri, r in enumerate(cell):
+        x = pad
+        for im in r:
+            if im: canvas.paste(im, (x, y))
+            x += cw + pad
+        y += rowh[ri] + pad
+    canvas.save(out, "JPEG", quality=85)
+    return True
 
 
 def cmd_kadr(o):

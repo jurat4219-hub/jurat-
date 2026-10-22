@@ -12,7 +12,9 @@ Avval agent faylining oxiridagi "Saboqlar"ni va xatolar.md ning oxirgi 10 qatori
 1. Dispetcher `<video>_kadr.jpg` bergan bo'lsa — FAQAT shu bitta rasmni och (chapda oxirgi kadr, o'ngda 1.5 s oldingi). Berilmagan bo'lsa: `python navbat.py kadr "<video>"` (yoki eski `python kadr.py "<video>"`).
 2. KUB — displeyning PASTKI qatori, to'xtagan yakuniy qiymat (masalan 186.041). Tepadagi summa va narxni O'QIMA — narx doim 4 500.
    IKKI MARTA O'QI: rasmning chap va o'ng yarmidagi qiymat bir xilmi? Farq qilsa yoki xona xira bo'lsa — `ffmpeg -sseof -3 -i video -vf fps=3,scale=900:-1 oxir_%02d.jpg` qilib oxirgi kadrlarni och va qayta o'qi. Baribir aniq bo'lmasa: --note "kub ... xonasi aniq emas".
-3. DAVLAT RAQAMI tartibi: kadrdagi raqam → forward nomidagi raqam ("Akrom Aka 862" → ...862...) → IYK_OTA_mashinalar.xlsx. Zid bo'lsa yoki topilmasa: --plate "?" va savol.
+3. DAVLAT RAQAMI: montajning HAMMA kadrlariga qara (raqam ko'pincha boshida/o'rtada, mashina kelganda ko'rinadi; kub esa oxirida).
+   O'RTADAGI 3 XONA yetarli: kolonkada yoki raqamda faqat "540" ko'rinsa ham, --plate "540" deb ber — jurnal_tool.py o'zi IYK_OTA_mashinalar.xlsx dan to'lig'ini topadi (540 -> 01 540 UMA, 696 -> 01 696 OMA, 861 -> 01 861 ULA). Harf xato o'qilsa ham 3 xona to'g'ri bo'lsa skript to'g'rilaydi.
+   Tartib: kadrdagi 3 xona yoki to'liq raqam → forward nomidagi raqam ("Akrom Aka 862" → 862). Hech qayerda ko'rinmasa: --plate "?" va savol. Skript "N ta mashina bor" desa — Juratdan so'ra.
 4. Displey umuman ko'rinmasa — jurnalga YOZMA, faqat "displey ko'rinmadi" deb qaytar.
 5. `python jurnal_tool.py add --date KK.OO.YYYY --time SS:DD --plate "..." --kub N --video "<fayl nomi>" [--note "..."]`
 6. Skript "PAFTOR ehtimoli" desa va vaqtlar bir-biriga yaqin (≤30 daqiqa) bo'lsa: `merge --id <katta> --add <kichik>`, keyin `del --id <kichik>`. Vaqt uzoq bo'lsa — merge qilma, Juratdan so'ra.

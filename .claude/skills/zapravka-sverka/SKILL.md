@@ -11,7 +11,7 @@ BARCHA Excel fayllar FAQAT `ish\zapravka\jurnal_tool.py` orqali yasaladi — o'z
 - NARX DOIM 4 500 so'm/kub. Kolonka ekranidagi narx (5 600 va h.k.) va summa — BIZ UCHUN EMAS, ularni o'qima ham, yozma ham.
 - Videodan faqat IKKI narsa kerak: **KUB** (kolonkaning PASTKI qatori, masalan 186.041) va **DAVLAT RAQAMI**. Tepadagi qator (summa) — e'tibor berma.
 - Kubni taxmin qilma, summadan hisoblab chiqarma. O'qilmagan xona bo'lsa — o'qilganini yoz va --note bilan "videoni tekshiring" deb belgila.
-- Davlat raqamini ish\zapravka\IYK_OTA_mashinalar.xlsx ro'yxatidan tanla (skript o'zi 1 belgi farqni tuzatadi, O/0 chalkashligini to'g'rilaydi).
+- Davlat raqami: faqat O'RTADAGI 3 XONA o'qilsa ham yetarli ("540" → 01 540 UMA, "696" → 01 696 OMA). --plate "540" deb ber, skript IYK_OTA_mashinalar.xlsx dan to'lig'ini topadi; harf xato bo'lsa ham 3 xona bo'yicha tuzatadi.
 - Raqam ko'rinmasa — --plate "?" bilan yoz va Juratdan so'ra.
 
 ## Bir martalik tayyorgarlik
@@ -49,6 +49,7 @@ Eski o'zing yasagan jurnal fayllaridan (jurnal_2026-10.xlsx va h.k.) FOYDALANMA 
 - `build --month YYYY-MM` — Zapravka_jurnal_YYYY-MM.xlsx.
 
 ## Tuzatish
+- Raqamsiz ("?") yoki noto'g'ri raqamli yozuvga raqam qo'yish: `python jurnal_tool.py setplate --id N --plate "540"` (yoki to'liq raqam). Jurat "69-chisi 861" desa ham shunday.
 - Noto'g'ri yozuv: `list --month YYYY-MM` → id → `del --id N` → qayta add → build.
 - Jurat tuzatsa: xatolar.md ga qator + shu faylning "Saboqlar"iga qoida.
 

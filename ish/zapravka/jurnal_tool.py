@@ -13,6 +13,7 @@ Buyruqlar (shu papkada ishga tushiring):
   python jurnal_tool.py vedadd --file ved_2026-10.json --date 14.10.2026 --plate "01 696 OMA" --kub "162+16" [--driver "..."]
                                                             (vedomost qatorini qo'shadi; bor qatorni qayta qo'shmaydi)
   python jurnal_tool.py check --month 2026-10               (shubhali yozuvlar: "?", izohli, bir kunda 2 marta, paftor ehtimoli)
+  python jurnal_tool.py setplate --id 69 --plate "01 861 ULA"   -> raqamsiz yozuvga raqam qo'yish
   python jurnal_tool.py build [--month 2026-10]          -> Zapravka_jurnal_2026-10.xlsx
   python jurnal_tool.py sverka --vedomost ved.json [--month 2026-10]   -> Sverka_2026-10.xlsx
      ved.json = [{"date":"2026-10-14","plate":"01 696 OMA","kub":186.041,"driver":"..."}, ...]
@@ -74,11 +75,24 @@ def fleet():
     return out
 
 def match_plate(p):
-    """(raqam, izoh). 1 belgi farq -> ro'yxatdagisi."""
-    f = fleet(); p = norm_plate(p)
+    """(raqam, izoh). To'liq moslik -> 3 xonali raqam bo'yicha -> 1 belgi farq."""
+    f = fleet()
+    raw = str(p or "").strip()
+    # Faqat 3 xona ko'ringan bo'lsa (masalan "540" yoki "01540"): ro'yxatdan to'liq raqamni top.
+    # Zapravkada ko'pincha o'rtadagi 3 xona o'qiladi: 540 -> 01 540 UMA, 696 -> 01 696 OMA.
+    digs = re.sub(r"\D", "", raw)
+    if f and not re.search(r"[A-Za-zА-Яа-я]", raw) and 3 <= len(digs) <= 5:
+        mid = digs[-3:] if len(digs) >= 3 else digs       # oxirgi 3 xona = seriya raqami
+        hit = [k for k in f if k.split()[1] == mid]
+        if len(hit) == 1: return hit[0], f"3 xona bo'yicha topildi ({mid})"
+        if len(hit) > 1: return "?", f"{mid} raqamli {len(hit)} ta mashina bor ({', '.join(hit)}) — Juratdan so'ra"
+    p = norm_plate(p)
     if "?" in p or not p.strip(): return "?", "raqam noma'lum — Juratdan so'rash kerak"
     if not f or p in f: return p, ""
     if re.match(r"^\d{2} \d{3} [A-Z]{3}$", p):
+        mid = p.split()[1]
+        hit = [k for k in f if k.split()[1] == mid]        # 3 xona aniq, harf xato bo'lsa — raqam bo'yicha
+        if len(hit) == 1: return hit[0], (f"ro'yxatdan tuzatildi (o'qilgan: {p})" if hit[0] != p else "")
         near = [k for k in f if sum(a != b for a, b in zip(k, p)) == 1]
         if len(near) == 1: return near[0], f"ro'yxatdan tuzatildi (o'qilgan: {p})"
     return p, "YANGI MASHINA? ro'yxatda yo'q"
@@ -301,6 +315,7 @@ def main():
     v = sp.add_parser('vedadd'); v.add_argument('--file', required=True); v.add_argument('--date', required=True); v.add_argument('--plate', required=True)
     v.add_argument('--kub', required=True); v.add_argument('--driver', default='')
     c = sp.add_parser('check'); c.add_argument('--month', default='')
+    spl = sp.add_parser('setplate'); spl.add_argument('--id', type=int, required=True); spl.add_argument('--plate', required=True)
     o = ap.parse_args()
     if o.cmd == 'add':
         with Lock():
@@ -326,6 +341,13 @@ def main():
     elif o.cmd == 'vedadd':
         with Lock():
             vedadd(o)
+    elif o.cmd == 'setplate':
+        with Lock():
+            rows = load(); r = next((x for x in rows if x['id'] == o.id), None)
+            if not r: print('topilmadi'); return
+            pl, izoh = match_plate(o.plate); r['plate'] = pl
+            r['note'] = '; '.join(x for x in [r.get('note',''), 'raqam qo\'lda kiritildi'] if x and 'noma' not in x and 'RAQAM' not in x.upper())
+            save(rows); print(f"#{o.id} raqami o'rnatildi: {pl}" + (f' ({izoh})' if 'tuzat' in izoh or 'YANGI' in izoh else ''))
     elif o.cmd == 'check': print(check(o.month))
 
 class Lock:
