@@ -17,3 +17,7 @@ __pycache__/
 !chrome/**/LivelyInfo.json
 !chrome/**/thumb.png
 !chrome/**/ekran_blokirovka.jpg
+
+# Agent runtime data
+agent/agent_xotira.db*
+agent/suratlar/
