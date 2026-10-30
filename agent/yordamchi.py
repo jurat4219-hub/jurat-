@@ -64,7 +64,7 @@ class App:
         self._btn(btns, "⏹  Stop", self.stop, RANG["panel"], RANG["ink"]).pack(side="right", padx=6)
 
         tk.Label(root, text="Natija:", fg=RANG["ink"], bg=RANG["bg"], anchor="w",
-                 padx=14, pady=(10, 0)).pack(fill="x")
+                 padx=14).pack(fill="x", pady=(10, 0))
         self.out = scrolledtext.ScrolledText(root, font=("Segoe UI", 11), bg=RANG["panel"],
                                              fg=RANG["ink"], relief="flat", wrap="word", height=14,
                                              insertbackground=RANG["ink"], padx=10, pady=8)
